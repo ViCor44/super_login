@@ -1,0 +1,209 @@
+<?php
+require 'config.php';
+
+require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/Mailer.php';
+
+
+// só admins autenticados
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+if (
+    ($_SESSION['must_change_password'] ?? 0) === 1 &&
+    basename($_SERVER['PHP_SELF']) !== 'force_change_password.php'
+) {
+    header('Location: force_change_password.php');
+    exit;
+}
+
+$erro = '';
+$sucesso = '';
+
+// buscar sistemas disponíveis
+$systemsStmt = $pdo->query("SELECT id, nome FROM systems WHERE ativo = 1");
+$systems = $systemsStmt->fetchAll();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $username = trim($_POST['username']);
+    $nome     = trim($_POST['nome']);
+    $email    = trim($_POST['email']);
+    $password = $_POST['password'];
+    $confirm  = $_POST['confirm'];
+    $access   = $_POST['systems'] ?? [];
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $erro = 'Email inválido.';
+    } elseif ($password !== $confirm) {
+        $erro = 'As passwords não coincidem.';
+    } elseif (strlen($password) < 6) {
+        $erro = 'A password deve ter pelo menos 6 caracteres.';
+    } elseif (empty($access)) {
+        $erro = 'Selecione pelo menos um sistema.';
+    } else {
+
+        // verificar duplicados
+        $stmt = $pdo->prepare("SELECT id FROM admins WHERE username = ? OR email = ?");
+        $stmt->execute([$username, $email]);
+
+        if ($stmt->fetch()) {
+            $erro = 'Utilizador ou email já existe.';
+        } else {
+
+            $pdo->beginTransaction();
+
+            try {
+                // criar admin
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+
+                $stmt = $pdo->prepare("
+                    INSERT INTO admins (username, nome, email, password_hash)
+                    VALUES (?, ?, ?, ?)
+                ");
+                $stmt->execute([$username, $nome, $email, $hash]);
+
+                $adminId = $pdo->lastInsertId();
+
+                // associar sistemas
+                $stmt = $pdo->prepare("
+                    INSERT INTO admin_systems (admin_id, system_id)
+                    VALUES (?, ?)
+                ");
+
+                foreach ($access as $systemId) {
+                    $stmt->execute([$adminId, $systemId]);
+                }
+
+                $pdo->commit();
+
+                $emailHtml = "
+                <h2>Bem-vindo ao Super Login</h2>
+
+                <p>A sua conta de administrador foi criada.</p>
+
+                <p><strong>Utilizador:</strong> {$username}</p>
+                <p><strong>Password:</strong> {$password}</p>
+
+                <p>
+                Por motivos de segurança, ao primeiro login será obrigado a definir
+                uma nova password.
+                </p>
+
+                <p>
+                <a href='http://localhost/super_login/login.php'>
+                👉 Aceder ao Super Login
+                </a>
+                </p>
+
+                <p>Se não reconhece este email, ignore-o.</p>
+                ";
+
+                Mailer::send(
+                    $email,
+                    'Conta de administrador criada',
+                    $emailHtml
+                );
+
+
+                $sucesso = 'Administrador criado com sucesso.';
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                $erro = 'Erro ao criar administrador.';
+            }
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Login | Criar Administrador</title>
+    <link rel="stylesheet" href="assets/style1.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> <!-- Para ícones -->
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo">Super Login</div>
+
+    <div class="user">
+        <span class="user-name"><?= htmlspecialchars($_SESSION['admin_nome'] ?? 'Admin') ?></span>
+
+        <a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+
+        <a href="admin_manage.php"><i class="fas fa-users-cog"></i> Gestão de admins</a>
+
+        <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Sair</a>
+
+        <button id="theme-toggle" class="theme-toggle"><i class="fas fa-moon"></i></button> <!-- Toggle dark mode -->
+    </div>
+</div>
+
+<div class="dashboard">
+    <h1>Novo Administrador</h1>
+    <p class="subtitle">Definir dados e acessos</p>
+
+    <?php if ($erro): ?>
+        <div class="error"><?= htmlspecialchars($erro) ?></div>
+    <?php endif; ?>
+
+    <?php if ($sucesso): ?>
+        <div class="success"><?= htmlspecialchars($sucesso) ?></div>
+    <?php endif; ?>
+
+    <form method="post" class="form-box">
+        <label>Utilizador</label>
+        <input type="text" name="username" required>
+
+        <label>Nome</label>
+        <input type="text" name="nome" required>
+
+        <label>Email</label>
+        <input type="email" name="email" required>
+
+        <label>Password</label>
+        <input type="password" name="password" required>
+
+        <label>Confirmar password</label>
+        <input type="password" name="confirm" required>
+
+        <fieldset class="checkbox-group">
+            <legend>Sistemas com acesso</legend>
+            <?php foreach ($systems as $s): ?>
+                <label class="checkbox-item">
+                    <input type="checkbox" name="systems[]" value="<?= $s['id'] ?>">
+                    <span class="system-name"><?= htmlspecialchars($s['nome']) ?></span>
+                </label>
+            <?php endforeach; ?>
+        </fieldset>
+
+        <button type="submit" class="btn">Criar administrador</button>
+    </form>
+</div>
+
+<script>
+// Dark mode toggle
+const toggle = document.getElementById('theme-toggle');
+const body = document.body;
+toggle.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    const icon = toggle.querySelector('i');
+    icon.classList.toggle('fa-moon');
+    icon.classList.toggle('fa-sun');
+    localStorage.setItem('theme', body.classList.contains('dark-mode') ? 'dark' : 'light');
+});
+
+// Load saved theme
+if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark-mode');
+    toggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
+}
+</script>
+
+</body>
+</html>

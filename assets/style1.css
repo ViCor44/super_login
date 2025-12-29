@@ -1,0 +1,571 @@
+/* Variáveis para temas */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #333;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --border-radius: 16px;
+    --transition: all 0.3s ease-in-out;
+    --font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.dark-mode {
+    --primary-color: #0d6efd;
+    --secondary-color: #adb5bd;
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    transition: var(--transition);
+}
+
+/* Topbar */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 15px 30px;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.topbar .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.topbar .user {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.topbar .user a, .topbar .user .user-name {
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.topbar .user a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover {
+    transform: rotate(15deg);
+}
+
+/* Dashboard */
+.dashboard {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.dashboard h1 {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.dashboard .subtitle {
+    font-size: 1rem;
+    color: var(--secondary-color);
+    margin-bottom: 30px;
+}
+
+/* Barra de busca */
+.search-bar {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px 40px 12px 15px;
+    border: 1px solid var(--secondary-color);
+    border-radius: var(--border-radius);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.search-bar input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.search-bar i {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--secondary-color);
+}
+
+/* Cards Grid */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Empurra o botão para o fundo */
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 25px;
+    text-align: center;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+    min-height: 250px; /* Altura mínima para alinhamento consistente */
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card::before { /* Efeito glassmorphism sutil */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+    pointer-events: none;
+}
+
+.card-content {
+    flex-grow: 1; /* Faz o conteúdo ocupar espaço e alinhar */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.card-logo {
+    margin-bottom: 20px;
+    height: 100px; /* Altura fixa para logos, para consistência */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-logo img {
+    max-width: 150px; /* Aumentado para mais perceptibilidade */
+    max-height: 100%; /* Mantém proporção */
+    width: auto;
+    height: auto;
+    object-fit: contain; /* Evita distorção em logos pequenos */
+    border-radius: 12px;
+    transition: var(--transition);
+}
+
+.card-logo img:hover {
+    transform: scale(1.1); /* Zoom leve para mais destaque */
+}
+
+.card-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+}
+
+.card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
+/* Botão com gradiente */
+.btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--primary-color), #0056b3);
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    transition: var(--transition);
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: auto; /* Garante que fique no fundo do flex */
+}
+
+.btn:hover {
+    background: linear-gradient(135deg, #0056b3, var(--primary-color));
+    transform: translateY(-2px);
+}
+
+/* Animação de entrada */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .topbar {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .topbar .user {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .cards {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        animation: none; /* Desativa animação em mobile para performance */
+        min-height: auto; /* Ajusta para mobile */
+    }
+}
+
+/* Tabela de Admins */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: var(--shadow);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: var(--card-bg);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.admin-table th, .admin-table td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Linhas sutis */
+    transition: var(--transition);
+}
+
+.admin-table th {
+    background-color: var(--primary-color);
+    color: #fff;
+    font-weight: bold;
+}
+
+.admin-table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05); /* Hover sutil */
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Status badges */
+.status {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.status.active {
+    background-color: #28a745; /* Verde para ativo */
+    color: #fff;
+}
+
+.status.inactive {
+    background-color: #dc3545; /* Vermelho para inativo */
+    color: #fff;
+}
+
+/* Links de ações */
+.action-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    margin-right: 10px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.action-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.action-link.deactivate {
+    color: #dc3545;
+}
+
+.action-link.activate {
+    color: #28a745;
+}
+
+/* Responsividade para tabela (scroll horizontal em mobile) */
+@media (max-width: 768px) {
+    .admin-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* Formulário */
+.form-box {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 25px;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.form-box label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.form-box input[type="text"],
+.form-box input[type="email"],
+.form-box input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+.form-box input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.input-disabled {
+    background-color: var(--bg-color);
+    color: var(--secondary-color);
+    cursor: not-allowed;
+}
+
+/* Checkbox single */
+.checkbox-single {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.checkbox-single input {
+    margin: 0;
+}
+
+/* Checkbox group (já existente, mas ajustado) */
+.checkbox-group {
+    margin: 10px 0 25px;
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 12px;
+    background: var(--bg-color);
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.checkbox-item:hover {
+    background: rgba(0, 123, 255, 0.05);
+    border-radius: 4px;
+}
+
+.checkbox-item span {
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.checkbox-item input[type="checkbox"] {
+    margin: 0;
+}
+
+/* Mensagens de erro/sucesso */
+.error, .success {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.dark-mode .error {
+    background-color: #721c24;
+    color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+.dark-mode .success {
+    background-color: #155724;
+    color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+/* Botão (já existente, mas confirmado) */
+.btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Login Container */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--bg-color);
+    padding: 20px;
+}
+
+.login-right {
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-box {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 40px 30px;
+    text-align: center;
+    transition: var(--transition);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.login-box h2 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.login-box .subtitle {
+    font-size: 1rem;
+    color: var(--secondary-color);
+    margin-bottom: 30px;
+}
+
+/* Form elements (already in form-box, reused) */
+.login-box form {
+    text-align: left;
+}
+
+.login-box label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.login-box input[type="email"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+.login-box input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+.login-box .btn {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Links */
+.login-links {
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+
+.login-links a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.login-links a:hover {
+    text-decoration: underline;
+    color: #0056b3;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .login-box {
+        padding: 30px 20px;
+    }
+}
