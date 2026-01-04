@@ -19,6 +19,7 @@ class Mailer
             $mail->Password   = $config['password'];
             $mail->SMTPSecure = $config['encryption'];
             $mail->Port       = $config['port'];
+            $mail->CharSet = 'UTF-8';
 
             $mail->setFrom($config['from_email'], $config['from_name']);
             $mail->addAddress($to);

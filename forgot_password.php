@@ -1,5 +1,7 @@
 <?php
 require 'config.php';
+require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/Mailer.php';
 
 $msg = '';
 
@@ -14,12 +16,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $token = bin2hex(random_bytes(32));
 
         $pdo->prepare("
+            UPDATE password_resets
+            SET used = 1
+            WHERE admin_id = ?
+        ")->execute([$admin['id']]);
+
+        $pdo->prepare("
             INSERT INTO password_resets (admin_id, token, expires_at)
             VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 MINUTE))
         ")->execute([$admin['id'], $token]);
 
-        // aqui futuramente entra o envio de email
+        $resetLink = "http://localhost/super_login/reset_password.php?token=$token";
+
+        $html = "
+            <h2>Redefinição de password</h2>
+
+            <p>Recebemos um pedido para redefinir a sua password.</p>
+
+            <p>
+                <a href='{$resetLink}'
+                style='display:inline-block;padding:10px 15px;
+                        background:#2563eb;color:#fff;
+                        text-decoration:none;border-radius:5px;'>
+                    Redefinir password
+                </a>
+            </p>
+
+            <p>Este link é válido por <strong>30 minutos</strong>.</p>
+
+            <p>Se não pediu esta alteração, pode ignorar este email.</p>
+        ";
+
+        Mailer::send(
+            $email,
+            'Super Login | Redefinição de password',
+            $html
+        );
     }
+
 
     // resposta neutra (segurança)
     $msg = 'Se o email existir, irá receber instruções para redefinir a password.';
