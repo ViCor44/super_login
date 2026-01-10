@@ -4,6 +4,8 @@ require 'config.php';
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/Mailer.php';
 
+$systemsMap = require __DIR__ . '/systems_map.php';
+$notMappedSystems = [];
 
 // só admins autenticados
 if (!isset($_SESSION['admin_id'])) {
@@ -67,17 +69,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $adminId = $pdo->lastInsertId();
 
-                // associar sistemas
-                $stmt = $pdo->prepare("
-                    INSERT INTO admin_systems (admin_id, system_id)
-                    VALUES (?, ?)
-                ");
-
                 foreach ($access as $systemId) {
                     $stmt->execute([$adminId, $systemId]);
                 }
 
+                foreach ($access as $systemId) {
+
+                    if (!isset($systemsMap[$systemId])) {
+                        continue;
+                    }
+
+                    $sys = $systemsMap[$systemId];
+
+                    try {
+                        $pdoSys = new PDO(
+                            $sys['dsn'],
+                            $sys['user'],
+                            $sys['pass'],
+                            [
+                                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                            ]
+                        );
+
+                        $stmt = $pdoSys->prepare("
+                            SELECT {$sys['id_col']} AS user_id
+                            FROM {$sys['user_table']}
+                            WHERE {$sys['email_col']} = ?
+                            LIMIT 1
+                        ");
+                        $stmt->execute([$email]);
+                        $user = $stmt->fetch();
+
+                        if ($user) {
+                            $pdo->prepare("
+                                INSERT IGNORE INTO admin_user_map
+                                (admin_id, system_key, user_id)
+                                VALUES (?, ?, ?)
+                            ")->execute([
+                                $adminId,
+                                $systemId,
+                                $user['user_id']
+                            ]);
+                        } else {
+                            $notMappedSystems[] = $sys['name'];
+                        }
+
+                    } catch (Throwable $e) {
+                        $notMappedSystems[] = $sys['name'];
+                    }
+                }
+
                 $pdo->commit();
+
+                if (!empty($notMappedSystems)) {
+                    $sucesso .= '<br><br><strong>Atenção:</strong> O administrador ainda não existe nos seguintes sistemas: '
+                        . implode(', ', $notMappedSystems)
+                        . '.<br>Deverá registar-se nesses sistemas utilizando o mesmo email.';
+                }
 
                 $emailHtml = "
                 <h2>Bem-vindo ao Super Login</h2>

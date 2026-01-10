@@ -1,19 +1,39 @@
 <?php
 require 'config.php';
 require_once 'auth_helpers.php';
+
+if (isset($_GET['refresh'])) {
+    header('Location: dashboard.php');
+    exit;
+}
+
 $isRoot = isRootAdmin($pdo, $_SESSION['admin_id']);
 
-// buscar sistemas a que o admin tem acesso
-$stmt = $pdo->prepare("
-    SELECT s.id, s.nome, s.code, s.logo
-    FROM systems s
-    JOIN admin_systems a ON a.system_id = s.id
-    WHERE a.admin_id = ?
-      AND s.ativo = 1
-");
+// carregar mapa de sistemas
+$systemsMap = require __DIR__ . '/systems_map.php';
 
+// buscar sistemas associados ao admin
+$stmt = $pdo->prepare("
+    SELECT system_key
+    FROM admin_user_map
+    WHERE admin_id = ?
+");
 $stmt->execute([$_SESSION['admin_id']]);
-$systems = $stmt->fetchAll();
+$rows = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// construir lista final de sistemas
+$systems = [];
+
+foreach ($rows as $systemKey) {
+    if (isset($systemsMap[$systemKey])) {
+        $systems[] = [
+            'key'  => $systemKey,
+            'name' => $systemsMap[$systemKey]['name'],
+            'logo' => $systemsMap[$systemKey]['logo'] ?? null,
+        ];
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -33,6 +53,9 @@ $systems = $stmt->fetchAll();
         <span class="user-name"><?= htmlspecialchars($_SESSION['admin_nome'] ?? 'Admin') ?></span>
 
         <a href="dashboard.php"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="refresh_systems.php">
+            <i class="fas fa-sync-alt"></i> Atualizar acessos
+        </a>
         <a href="admin_create.php"><i class="fas fa-user-plus"></i> Novo administrador</a>
 
         <?php if ($isRoot): ?>
@@ -56,24 +79,24 @@ $systems = $stmt->fetchAll();
 
     <div class="cards">
         <?php foreach ($systems as $s): ?>
-            <div class="card" data-name="<?= strtolower(htmlspecialchars($s['nome'])) ?>">
-                <div class="card-content"> <!-- Wrapper para flex column -->
+            <div class="card" data-name="<?= strtolower(htmlspecialchars($s['name'])) ?>">
+                <div class="card-content">
                     <div class="card-logo">
                         <?php if (!empty($s['logo'])): ?>
                             <img src="assets/logos/<?= htmlspecialchars($s['logo']) ?>"
-                                 alt="<?= htmlspecialchars($s['nome']) ?>">
+                                alt="<?= htmlspecialchars($s['name']) ?>">
                         <?php else: ?>
                             <div class="card-icon"><i class="fas fa-desktop"></i></div>
                         <?php endif; ?>
                     </div>
 
-                    <h3><?= htmlspecialchars($s['nome']) ?></h3>
+                    <h3><?= htmlspecialchars($s['name']) ?></h3>
                 </div>
 
-                <a href="enter_system.php?id=<?= $s['id'] ?>"
-                   class="btn"
-                   target="_blank"
-                   rel="noopener noreferrer">
+                <a href="enter_system.php?system=<?= htmlspecialchars($s['key']) ?>"
+                    class="btn"
+                    target="_blank"
+                    rel="noopener noreferrer">
                     Entrar
                 </a>
             </div>

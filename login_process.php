@@ -15,7 +15,7 @@ if ($admin && password_verify($password, $admin['password_hash'])) {
 
     $_SESSION['admin_id']   = $admin['id'];
     $_SESSION['admin_nome'] = $admin['nome'];
-
+    $_SESSION['admin_email'] = $admin['email'];
     $_SESSION['must_change_password'] = (int)$admin['must_change_password'];
 
     if ($_SESSION['must_change_password'] === 1) {

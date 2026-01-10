@@ -1,6 +1,9 @@
 <?php
 require 'config.php';
 
+$systemsMap = require __DIR__ . '/systems_map.php';
+$notMappedSystems = [];
+
 // verificar se já existe algum admin
 $stmt = $pdo->query("SELECT COUNT(*) FROM admins");
 $totalAdmins = $stmt->fetchColumn();
@@ -39,10 +42,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hash = password_hash($password, PASSWORD_DEFAULT);
 
             $stmt = $pdo->prepare("
-                INSERT INTO admins (username, password, email, must_change_password)
-                VALUES (?, ?, ?, 1);
+                INSERT INTO admins (username, nome, email, password_hash, must_change_password)
+                VALUES (?, ?, ?, ?, 1)
             ");
             $stmt->execute([$username, $nome, $email, $hash]);
+
+            $adminId = $pdo->lastInsertId();
+
+            foreach ($systemsMap as $systemKey => $sys) {
+
+                try {
+                    $pdoSys = new PDO(
+                        $sys['dsn'],
+                        $sys['user'],
+                        $sys['pass'],
+                        [
+                            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                        ]
+                    );
+
+                    $stmt = $pdoSys->prepare("
+                        SELECT {$sys['id_col']} AS user_id
+                        FROM {$sys['user_table']}
+                        WHERE {$sys['email_col']} = ?
+                        LIMIT 1
+                    ");
+                    $stmt->execute([$email]);
+                    $user = $stmt->fetch();
+
+                    if ($user) {
+                        $pdo->prepare("
+                            INSERT IGNORE INTO admin_user_map
+                            (admin_id, system_key, user_id)
+                            VALUES (?, ?, ?)
+                        ")->execute([
+                            $adminId,
+                            $systemKey,
+                            $user['user_id']
+                        ]);
+                    } else {
+                        $notMappedSystems[] = $sys['name'];
+                    }
+
+                } catch (Throwable $e) {
+                    $notMappedSystems[] = $sys['name'];
+                }
+            }
 
             $sucesso = 'Administrador criado com sucesso.';
         }
