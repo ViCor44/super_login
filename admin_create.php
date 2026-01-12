@@ -24,27 +24,20 @@ if (
 $erro = '';
 $sucesso = '';
 
-// buscar sistemas disponíveis
-$systemsStmt = $pdo->query("SELECT id, nome FROM systems WHERE ativo = 1");
-$systems = $systemsStmt->fetchAll();
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $username = trim($_POST['username']);
     $nome     = trim($_POST['nome']);
     $email    = trim($_POST['email']);
     $password = $_POST['password'];
-    $confirm  = $_POST['confirm'];
-    $access   = $_POST['systems'] ?? [];
+    $confirm  = $_POST['confirm'];    
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $erro = 'Email inválido.';
     } elseif ($password !== $confirm) {
         $erro = 'As passwords não coincidem.';
     } elseif (strlen($password) < 6) {
-        $erro = 'A password deve ter pelo menos 6 caracteres.';
-    } elseif (empty($access)) {
-        $erro = 'Selecione pelo menos um sistema.';
+        $erro = 'A password deve ter pelo menos 6 caracteres.';    
     } else {
 
         // verificar duplicados
@@ -69,23 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $adminId = $pdo->lastInsertId();
 
-                foreach ($access as $systemId) {
-                    $stmt->execute([$adminId, $systemId]);
-                }
+                
 
-                foreach ($access as $systemId) {
-
-                    if (!isset($systemsMap[$systemId])) {
-                        continue;
-                    }
-
-                    $sys = $systemsMap[$systemId];
+                foreach ($systemsMap as $systemKey => $sys) {
 
                     try {
                         $pdoSys = new PDO(
                             $sys['dsn'],
-                            $sys['user'],
-                            $sys['pass'],
+                            $sys['db_user'],
+                            $sys['db_pass'],
                             [
                                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
@@ -93,9 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         );
 
                         $stmt = $pdoSys->prepare("
-                            SELECT {$sys['id_col']} AS user_id
-                            FROM {$sys['user_table']}
-                            WHERE {$sys['email_col']} = ?
+                            SELECT id AS user_id
+                            FROM {$sys['users_table']}
+                            WHERE {$sys['email_field']} = ?
                             LIMIT 1
                         ");
                         $stmt->execute([$email]);
@@ -103,12 +88,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         if ($user) {
                             $pdo->prepare("
-                                INSERT IGNORE INTO admin_user_map
-                                (admin_id, system_key, user_id)
+                                INSERT INTO admin_user_map (admin_id, system_key, user_id)
                                 VALUES (?, ?, ?)
                             ")->execute([
                                 $adminId,
-                                $systemId,
+                                $systemKey,
                                 $user['user_id']
                             ]);
                         } else {
@@ -119,6 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $notMappedSystems[] = $sys['name'];
                     }
                 }
+
 
                 $pdo->commit();
 
@@ -219,17 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="password" name="password" required>
 
         <label>Confirmar password</label>
-        <input type="password" name="confirm" required>
-
-        <fieldset class="checkbox-group">
-            <legend>Sistemas com acesso</legend>
-            <?php foreach ($systems as $s): ?>
-                <label class="checkbox-item">
-                    <input type="checkbox" name="systems[]" value="<?= $s['id'] ?>">
-                    <span class="system-name"><?= htmlspecialchars($s['nome']) ?></span>
-                </label>
-            <?php endforeach; ?>
-        </fieldset>
+        <input type="password" name="confirm" required>        
 
         <button type="submit" class="btn">Criar administrador</button>
     </form>

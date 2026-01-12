@@ -1,13 +1,14 @@
 <?php
 require 'config.php';
-require_once 'auth_helpers.php';
 
-if (isset($_GET['refresh'])) {
-    header('Location: dashboard.php');
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: login.php');
     exit;
 }
 
-$isRoot = isRootAdmin($pdo, $_SESSION['admin_id']);
+require_once 'auth_helpers.php';
+
+$isRoot = isRootAdmin($pdo, (int)$_SESSION['admin_id']);
 
 // carregar mapa de sistemas
 $systemsMap = require __DIR__ . '/systems_map.php';
