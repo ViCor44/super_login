@@ -53,21 +53,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 try {
                     $pdoSys = new PDO(
-                        $sys['dsn'],
-                        $sys['user'],
-                        $sys['pass'],
-                        [
-                            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-                        ]
-                    );
+                    $sys['dsn'],
+                    $sys['db_user'],
+                    $sys['db_pass'],
+                    [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+                    ]
+                );
 
-                    $stmt = $pdoSys->prepare("
-                        SELECT {$sys['id_col']} AS user_id
-                        FROM {$sys['user_table']}
-                        WHERE {$sys['email_col']} = ?
-                        LIMIT 1
-                    ");
+                $stmt = $pdoSys->prepare("
+                    SELECT id AS user_id
+                    FROM {$sys['users_table']}
+                    WHERE {$sys['email_field']} = ?
+                    LIMIT 1
+                ");
                     $stmt->execute([$email]);
                     $user = $stmt->fetch();
 
