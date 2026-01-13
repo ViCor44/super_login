@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt = $pdo->prepare("
                 INSERT INTO admins (username, nome, email, password_hash, must_change_password)
-                VALUES (?, ?, ?, ?, 1)
+                VALUES (?, ?, ?, ?, 0)
             ");
             $stmt->execute([$username, $nome, $email, $hash]);
 
