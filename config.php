@@ -9,6 +9,16 @@ $pdo = new PDO(
     ]
 );
 
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => '', // domínio base!
+    'secure' => true,          // se estiveres em HTTPS
+    'httponly' => true,
+    'samesite' => 'Lax',      // importante para redirects
+]);
+session_name('SUPERLOGINSESSID');
 session_start();
+
 
 

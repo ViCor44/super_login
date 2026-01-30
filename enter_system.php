@@ -41,7 +41,7 @@ $token = bin2hex(random_bytes(32));
 
 $pdo->prepare("
     INSERT INTO admin_tokens (admin_id, system_key, token, expires_at)
-    VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 2 MINUTE))
+    VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE))
 ")->execute([
     $_SESSION['admin_id'],
     $systemKey,

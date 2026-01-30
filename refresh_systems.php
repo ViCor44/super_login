@@ -1,5 +1,5 @@
 <?php
-session_start();
+
 require 'config.php';
 
 if (!isset($_SESSION['admin_id'], $_SESSION['admin_email'])) {

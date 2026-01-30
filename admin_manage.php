@@ -10,7 +10,7 @@ if (!isset($_SESSION['admin_id'])) {
 $isRoot = isRootAdmin($pdo, $_SESSION['admin_id']);
 
 $stmt = $pdo->query("
-    SELECT id, username, nome, email, ativo, criado_em
+    SELECT id, username, nome, email, ativo, created_at
     FROM admins
     ORDER BY id
 ");
