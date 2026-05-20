@@ -28,7 +28,8 @@ foreach ($systemsMap as $systemKey => $system) {
             ]
         );
     } catch (Exception $e) {
-        continue; // sistema offline ou erro de ligação
+        // sistema offline — não remover mapeamento existente
+        continue;
     }
 
     // procurar utilizador pelo email
@@ -44,32 +45,33 @@ foreach ($systemsMap as $systemKey => $system) {
     $user = $stmt->fetch();
 
     if (!$user) {
-        continue; // ainda não existe neste sistema
+        // utilizador não existe neste sistema — remover mapeamento se existir
+        $pdo->prepare("
+            DELETE FROM admin_user_map
+            WHERE admin_id = ? AND system_key = ?
+        ")->execute([$adminId, $systemKey]);
+        continue;
     }
 
-    // verificar se já existe mapeamento
+    // atualizar user_id se o mapeamento já existe, inserir caso contrário
     $stmt = $pdo->prepare("
-        SELECT 1
-        FROM admin_user_map
-        WHERE admin_id = ?
-          AND system_key = ?
+        SELECT id FROM admin_user_map
+        WHERE admin_id = ? AND system_key = ?
     ");
     $stmt->execute([$adminId, $systemKey]);
+    $existing = $stmt->fetchColumn();
 
-    if ($stmt->fetchColumn()) {
-        continue; // já mapeado
+    if ($existing) {
+        $pdo->prepare("
+            UPDATE admin_user_map SET user_id = ?
+            WHERE admin_id = ? AND system_key = ?
+        ")->execute([$user['id'], $adminId, $systemKey]);
+    } else {
+        $pdo->prepare("
+            INSERT INTO admin_user_map (admin_id, system_key, user_id)
+            VALUES (?, ?, ?)
+        ")->execute([$adminId, $systemKey, $user['id']]);
     }
-
-    // criar mapeamento
-    $stmt = $pdo->prepare("
-        INSERT INTO admin_user_map (admin_id, system_key, user_id)
-        VALUES (?, ?, ?)
-    ");
-    $stmt->execute([
-        $adminId,
-        $systemKey,
-        $user['id']
-    ]);
 }
 
 // voltar à dashboard
