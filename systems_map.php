@@ -35,7 +35,7 @@ return [
         'users_table'  => 'utilizadores',
         'email_field'  => 'email',
         'id_field'     => 'id',
-        'redirect_ok'  => '/economato/index.php',
+        'redirect_ok'  => '/economato/public/index.php',
     ],
 
     'worklog' => [
