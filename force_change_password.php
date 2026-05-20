@@ -1,6 +1,10 @@
 <?php
-require 'auth_helpers.php';
-require 'config.php';
+require 'config.php'; // inicia a sessão primeiro
+
+if (!isset($_SESSION['admin_id'])) {
+    header('Location: login.php');
+    exit;
+}
 
 $error = '';
 

@@ -14,6 +14,8 @@ $systemsMap = require __DIR__ . '/systems_map.php';
 
 foreach ($systemsMap as $systemKey => $system) {
 
+    if (str_starts_with($systemKey, '_')) continue;
+
     // ligação ao sistema externo
     try {
         $pdoSystem = new PDO(

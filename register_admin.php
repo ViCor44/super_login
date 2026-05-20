@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'Email inválido.';
     } elseif ($password !== $confirm) {
         $erro = 'As passwords não coincidem.';
-    } elseif (strlen($password) < 6) {
-        $erro = 'A password deve ter pelo menos 6 caracteres.';
+    } elseif (strlen($password) < 8) {
+        $erro = 'A password deve ter pelo menos 8 caracteres.';
     } else {
         // verificar se username ou email já existem
         $stmt = $pdo->prepare("
@@ -50,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $adminId = $pdo->lastInsertId();
 
             foreach ($systemsMap as $systemKey => $sys) {
+
+                if (str_starts_with($systemKey, '_')) continue;
 
                 try {
                     $pdoSys = new PDO(

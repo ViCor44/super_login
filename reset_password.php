@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset) {
 
     if ($pass !== $conf) {
         $erro = 'As passwords não coincidem.';
-    } elseif (strlen($pass) < 6) {
-        $erro = 'Password demasiado curta.';
+    } elseif (strlen($pass) < 8) {
+        $erro = 'A password deve ter pelo menos 8 caracteres.';
     } else {
         $hash = password_hash($pass, PASSWORD_DEFAULT);
 

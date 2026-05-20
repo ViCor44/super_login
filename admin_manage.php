@@ -80,12 +80,15 @@ $admins = $stmt->fetchAll();
                 <td>
                     <?php if ($isRoot && $a['id'] !== $_SESSION['admin_id']): ?>
                         <a href="admin_edit.php?id=<?= $a['id'] ?>" class="action-link"><i class="fas fa-edit"></i> Editar</a>
-                        <a href="admin_toggle.php?id=<?= $a['id'] ?>"
-                           class="action-link <?= $a['ativo'] ? 'deactivate' : 'activate' ?>"
-                           onclick="return confirm('Tem a certeza?')">
-                           <i class="fas <?= $a['ativo'] ? 'fa-user-slash' : 'fa-user-check' ?>"></i>
-                           <?= $a['ativo'] ? 'Desativar' : 'Ativar' ?>
-                        </a>
+                        <form method="post" action="admin_toggle.php" style="display:inline"
+                              onsubmit="return confirm('Tem a certeza?')">
+                            <input type="hidden" name="id" value="<?= $a['id'] ?>">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+                            <button type="submit" class="action-link <?= $a['ativo'] ? 'deactivate' : 'activate' ?>">
+                                <i class="fas <?= $a['ativo'] ? 'fa-user-slash' : 'fa-user-check' ?>"></i>
+                                <?= $a['ativo'] ? 'Desativar' : 'Ativar' ?>
+                            </button>
+                        </form>
                     <?php else: ?>
                         —
                     <?php endif; ?>

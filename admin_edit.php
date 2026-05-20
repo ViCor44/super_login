@@ -19,13 +19,18 @@ $stmt->execute([$id]);
 $admin = $stmt->fetch();
 if (!$admin) { header("Location: admin_manage.php"); exit; }
 
-// sistemas
-$systems = $pdo->query("SELECT id, nome FROM systems WHERE ativo = 1")->fetchAll();
+// sistemas disponíveis (do mapa central, excluindo _config)
+$systemsMap = require __DIR__ . '/systems_map.php';
+$allSystems = array_filter(
+    $systemsMap,
+    fn($k) => !str_starts_with($k, '_'),
+    ARRAY_FILTER_USE_KEY
+);
 
 // sistemas atuais do admin
-$stmt = $pdo->prepare("SELECT system_id FROM admin_systems WHERE admin_id = ?");
+$stmt = $pdo->prepare("SELECT system_key FROM admin_user_map WHERE admin_id = ?");
 $stmt->execute([$id]);
-$current = array_column($stmt->fetchAll(), 'system_id');
+$current = array_column($stmt->fetchAll(), 'system_key');
 
 $erro = $ok = '';
 
@@ -33,12 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome  = trim($_POST['nome']);
     $email = trim($_POST['email']);
     $ativo = isset($_POST['ativo']) ? 1 : 0;
-    $sel   = $_POST['systems'] ?? [];
+    $sel   = $_POST['systems'] ?? []; // array de system_keys
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $erro = 'Email inválido.';
-    } elseif (empty($sel)) {
-        $erro = 'Selecione pelo menos um sistema.';
     } else {
         $pdo->beginTransaction();
         try {
@@ -47,10 +50,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE id = ?
             ")->execute([$nome, $email, $ativo, $id]);
 
-            // atualizar sistemas
-            $pdo->prepare("DELETE FROM admin_systems WHERE admin_id = ?")->execute([$id]);
-            $ins = $pdo->prepare("INSERT INTO admin_systems (admin_id, system_id) VALUES (?, ?)");
-            foreach ($sel as $sid) $ins->execute([$id, $sid]);
+            // sistemas a remover
+            $toRemove = array_diff($current, $sel);
+            foreach ($toRemove as $sKey) {
+                $pdo->prepare("DELETE FROM admin_user_map WHERE admin_id = ? AND system_key = ?")
+                   ->execute([$id, $sKey]);
+            }
+
+            // sistemas a adicionar (auto-mapear pelo email)
+            $toAdd = array_diff($sel, $current);
+            foreach ($toAdd as $sKey) {
+                if (!isset($allSystems[$sKey])) continue;
+                $sys = $allSystems[$sKey];
+                try {
+                    $pdoSys = new PDO($sys['dsn'], $sys['db_user'], $sys['db_pass'], [
+                        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    ]);
+                    $idField = $sys['id_field'] ?? 'id';
+                    $stmt = $pdoSys->prepare(
+                        "SELECT {$idField} AS user_id FROM {$sys['users_table']} WHERE {$sys['email_field']} = ? LIMIT 1"
+                    );
+                    $stmt->execute([$email]);
+                    $user = $stmt->fetch();
+                    if ($user) {
+                        $pdo->prepare("
+                            INSERT IGNORE INTO admin_user_map (admin_id, system_key, user_id)
+                            VALUES (?, ?, ?)
+                        ")->execute([$id, $sKey, $user['user_id']]);
+                    }
+                } catch (Throwable) {}
+            }
 
             $pdo->commit();
             $ok = 'Administrador atualizado.';
@@ -113,11 +143,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <fieldset class="checkbox-group">
             <legend>Sistemas com acesso</legend>
-            <?php foreach ($systems as $s): ?>
+            <?php foreach ($allSystems as $sKey => $sys): ?>
                 <label class="checkbox-item">
-                    <input type="checkbox" name="systems[]" value="<?= $s['id'] ?>"
-                        <?= in_array($s['id'], $current) ? 'checked' : '' ?>>
-                    <span class="system-name"><?= htmlspecialchars($s['nome']) ?></span>
+                    <input type="checkbox" name="systems[]" value="<?= htmlspecialchars($sKey) ?>"
+                        <?= in_array($sKey, $current) ? 'checked' : '' ?>>
+                    <span class="system-name"><?= htmlspecialchars($sys['name']) ?></span>
                 </label>
             <?php endforeach; ?>
         </fieldset>

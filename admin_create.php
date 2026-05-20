@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'Email inválido.';
     } elseif ($password !== $confirm) {
         $erro = 'As passwords não coincidem.';
-    } elseif (strlen($password) < 6) {
-        $erro = 'A password deve ter pelo menos 6 caracteres.';    
+    } elseif (strlen($password) < 8) {
+        $erro = 'A password deve ter pelo menos 8 caracteres.';    
     } else {
 
         // verificar duplicados
@@ -66,6 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 foreach ($systemsMap as $systemKey => $sys) {
 
+                    if (str_starts_with($systemKey, '_')) continue;
+
                     try {
                         $pdoSys = new PDO(
                             $sys['dsn'],
@@ -88,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         if ($user) {
                             $pdo->prepare("
-                                INSERT INTO admin_user_map (admin_id, system_key, user_id)
+                                INSERT IGNORE INTO admin_user_map (admin_id, system_key, user_id)
                                 VALUES (?, ?, ?)
                             ")->execute([
                                 $adminId,
@@ -113,6 +115,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         . '.<br>Deverá registar-se nesses sistemas utilizando o mesmo email.';
                 }
 
+                $scheme  = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                $baseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'];
+
                 $emailHtml = "
                 <h2>Bem-vindo ao Super Login</h2>
 
@@ -127,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </p>
 
                 <p>
-                <a href='http://localhost/super_login/login.php'>
+                <a href='{$baseUrl}/super_login/login.php'>
                 👉 Aceder ao Super Login
                 </a>
                 </p>

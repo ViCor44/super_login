@@ -26,7 +26,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 30 MINUTE))
         ")->execute([$admin['id'], $token]);
 
-        $resetLink = "http://localhost/super_login/reset_password.php?token=$token";
+        $scheme    = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $baseUrl   = $scheme . '://' . $_SERVER['HTTP_HOST'];
+        $resetLink = $baseUrl . '/super_login/reset_password.php?token=' . urlencode($token);
 
         $html = "
             <h2>Redefinição de password</h2>
