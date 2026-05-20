@@ -15,6 +15,16 @@ $stmt = $pdo->query("
     ORDER BY id
 ");
 $admins = $stmt->fetchAll();
+
+$pendingRequests = $pdo->query("
+    SELECT id, username, nome, email, requested_at
+    FROM admin_registration_requests
+    WHERE status = 'pending'
+    ORDER BY requested_at ASC
+")->fetchAll();
+
+$flashOk   = $_GET['ok']   ?? '';
+$flashErro = $_GET['erro'] ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -48,6 +58,58 @@ $admins = $stmt->fetchAll();
     <p class="subtitle">
         <?= $isRoot ? 'Gestão completa de administradores' : 'Apenas visualização' ?>
     </p>
+
+    <?php if ($flashOk === 'aprovado'): ?>
+        <div class="alert alert-success"><i class="fas fa-check-circle"></i> Pedido aprovado com sucesso.</div>
+    <?php elseif ($flashOk === 'rejeitado'): ?>
+        <div class="alert alert-info"><i class="fas fa-ban"></i> Pedido rejeitado.</div>
+    <?php elseif ($flashErro === 'duplicado'): ?>
+        <div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Utilizador ou email já existe.</div>
+    <?php elseif ($flashErro): ?>
+        <div class="alert alert-error"><i class="fas fa-exclamation-triangle"></i> Ocorreu um erro.</div>
+    <?php endif; ?>
+
+    <?php if (!empty($pendingRequests)): ?>
+    <h2 style="margin-top:30px">Pedidos pendentes <span class="badge-pending"><?= count($pendingRequests) ?></span></h2>
+    <table class="admin-table" style="margin-bottom:40px">
+        <thead>
+            <tr>
+                <th>Utilizador</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Data do pedido</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($pendingRequests as $r): ?>
+            <tr>
+                <td><?= htmlspecialchars($r['username']) ?></td>
+                <td><?= htmlspecialchars($r['nome']) ?></td>
+                <td><?= htmlspecialchars($r['email']) ?></td>
+                <td><?= date('d/m/Y H:i', strtotime($r['requested_at'])) ?></td>
+                <td>
+                    <form method="post" action="approve_request.php" style="display:inline">
+                        <input type="hidden" name="request_id" value="<?= $r['id'] ?>">
+                        <input type="hidden" name="action" value="approve">
+                        <button type="submit" class="action-link activate">
+                            <i class="fas fa-check"></i> Aprovar
+                        </button>
+                    </form>
+                    <form method="post" action="approve_request.php" style="display:inline"
+                          onsubmit="return confirm('Rejeitar este pedido?')">
+                        <input type="hidden" name="request_id" value="<?= $r['id'] ?>">
+                        <input type="hidden" name="action" value="reject">
+                        <button type="submit" class="action-link deactivate">
+                            <i class="fas fa-times"></i> Rejeitar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+    <?php endif; ?>
 
     <div class="search-bar">
         <input type="text" id="admin-search" placeholder="Pesquisar administradores...">

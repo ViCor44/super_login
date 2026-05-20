@@ -287,6 +287,32 @@ body {
     }
 }
 
+/* Alertas */
+.alert {
+    padding: 12px 16px;
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.alert-info    { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+.alert-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+/* Badge de pedidos pendentes */
+.badge-pending {
+    display: inline-block;
+    background: #e53935;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    vertical-align: middle;
+}
+
 /* Tabela de Admins */
 .admin-table {
     width: 100%;

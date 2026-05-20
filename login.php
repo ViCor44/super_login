@@ -56,6 +56,9 @@ if (isset($_SESSION['admin_id'])) {
                 <?php if ($totalAdmins === 0): ?>
                     <span>·</span>
                     <a href="register_admin.php">Criar administrador</a>
+                <?php else: ?>
+                    <span>·</span>
+                    <a href="request_access.php">Solicitar acesso</a>
                 <?php endif; ?>
             </div>        
         </div>
