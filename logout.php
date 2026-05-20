@@ -1,15 +1,12 @@
 <?php
-
-session_name('SUPERLOGINSESSID'); // mesmo nome do login
-session_start();
+require 'config.php'; // garante session_name + cookie params corretos
 
 $_SESSION = [];
 
-if (ini_get("session.use_cookies")) {
+if (ini_get('session.use_cookies')) {
     $params = session_get_cookie_params();
     setcookie(
-        session_name(),
-        '',
+        session_name(), '',
         time() - 42000,
         $params['path'],
         $params['domain'],
@@ -20,5 +17,5 @@ if (ini_get("session.use_cookies")) {
 
 session_destroy();
 
-header("Location: login.php");
+header('Location: login.php');
 exit;

@@ -11,11 +11,11 @@ $pdo = new PDO(
 
 session_set_cookie_params([
     'lifetime' => 0,
-    'path' => '/',
-    'domain' => '', // domínio base!
-    'secure' => true,          // se estiveres em HTTPS
+    'path'     => '/',
+    'domain'   => '',
+    'secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
     'httponly' => true,
-    'samesite' => 'Lax',      // importante para redirects
+    'samesite' => 'Lax',
 ]);
 session_name('SUPERLOGINSESSID');
 session_start();
