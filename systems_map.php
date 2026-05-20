@@ -16,7 +16,7 @@ return [
 
     'sae' => [
         'name'         => 'SAE - Sistema de Apoio à Enfermaria',
-        'login_url'    => 'http://191.188.126.13/enfermaria/public/sso_login.php',
+        'login_url'    => 'http://191.188.126.13/enfermaria/sso_login.php',
         'dsn'          => 'mysql:host=localhost;dbname=enfermaria;charset=utf8mb4',
         'db_user'      => 'root',
         'db_pass'      => '',
