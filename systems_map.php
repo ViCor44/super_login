@@ -64,4 +64,58 @@ return [
         'id_field'     => 'id',
         'redirect_ok'  => '/work_log/index.php',
     ],
+
+    'freezer' => [
+        'name'         => 'Freezer Monitor',
+        'login_url'    => 'http://191.188.126.13/freezer-monitor/sso_login.php',
+        'dsn'          => 'mysql:host=localhost;dbname=freezer_monitor;charset=utf8mb4',
+        'db_user'      => 'root',
+        'db_pass'      => '',
+        'users_table'  => 'users',
+        'email_field'  => 'email',
+        'id_field'     => 'id',
+        'redirect_ok'  => '/freezer-monitor/public/dashboard',
+        'session_vars' => [
+            'user_id'       => 'id',
+            'user_name'     => 'name',
+            'user_email'    => 'email',
+            'user_role'     => 'role',
+            'user_approved' => 'approved',
+        ],
+    ],
+
+    'repositorio' => [
+        'name'         => 'Repositório de Documentos',
+        'login_url'    => 'http://191.188.126.13/repositorio/sso_login.php',
+        'dsn'          => 'mysql:host=localhost;dbname=parque_repositorio;charset=utf8mb4',
+        'db_user'      => 'root',
+        'db_pass'      => '',
+        'users_table'  => 'users',
+        'email_field'  => 'email',
+        'id_field'     => 'id',
+        'redirect_ok'  => '/repositorio/public/documentos',
+        'session_vars' => [
+            'user.id'   => 'id',
+            'user.nome' => 'nome',
+            'user.role' => 'role_nome',
+        ],
+    ],
+
+    'autoprotecao' => [
+        'name'         => 'Sistema de Autoprotecção',
+        'login_url'    => 'http://191.188.126.13/sistema-autoprotecao/sso_login.php',
+        'dsn'          => 'mysql:host=localhost;dbname=sistema_autoprotecao;charset=utf8mb4',
+        'db_user'      => 'root',
+        'db_pass'      => '',
+        'users_table'  => 'utilizadores',
+        'email_field'  => 'email',
+        'id_field'     => 'id',
+        'redirect_ok'  => '/sistema-autoprotecao/public/index.php',
+        'session_vars' => [
+            'utilizador_id'     => 'id',
+            'utilizador_nome'   => 'nome',
+            'utilizador_email'  => 'email',
+            'utilizador_funcao' => 'funcao',
+        ],
+    ],
 ];
