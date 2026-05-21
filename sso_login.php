@@ -117,11 +117,21 @@ try {
     // ── 6. Iniciar sessão local ───────────────────────────────
     session_regenerate_id(true);
 
-    // Variáveis genéricas — a maioria dos sistemas usa estas.
-    // Se o teu sistema precisar de nomes diferentes, acrescenta linhas aqui.
-    // Ex: $_SESSION['loggedin'] = true; ou $_SESSION['username'] = $user['username'];
-    $_SESSION['user_id'] = $user[$idField];
-    $_SESSION['user']    = $user;
+    // Se o sistema definir 'session_vars' em systems_map.php, usa esse mapeamento.
+    // Caso contrário, cai no comportamento genérico.
+    $sessionVars = $system['session_vars'] ?? [];
+
+    if (!empty($sessionVars)) {
+        foreach ($sessionVars as $sessionKey => $dbColumn) {
+            $_SESSION[$sessionKey] = $user[$dbColumn] ?? null;
+        }
+    } else {
+        // Comportamento genérico para sistemas sem session_vars definido
+        $_SESSION['user_id'] = $user[$idField];
+    }
+
+    // Guarda o registo completo — útil para depuração e acesso a campos extra
+    $_SESSION['user'] = $user;
 
     header('Location: ' . $system['redirect_ok']);
     exit;

@@ -16,14 +16,22 @@ return [
 
     'sae' => [
         'name'         => 'SAE - Sistema de Apoio à Enfermaria',
-        'login_url'    => 'http://191.188.126.13/enfermaria/sso_login.php',
+        // Aponta para a rota MVC do SAE que já tem SSO nativo completo
+        'login_url'    => 'http://191.188.126.13/enfermaria/public/index.php?route=sso_login',
         'dsn'          => 'mysql:host=localhost;dbname=enfermaria;charset=utf8mb4',
         'db_user'      => 'root',
         'db_pass'      => '',
         'users_table'  => 'users',
         'email_field'  => 'email',
         'id_field'     => 'id',
-        'redirect_ok'  => '/enfermaria/public/index.php',
+        'redirect_ok'  => '/enfermaria/public/index.php?route=dashboard',
+        // Variáveis de sessão: 'nome_sessão' => 'coluna_na_bd'
+        'session_vars' => [
+            'user_id'   => 'id',
+            'user_name' => 'full_name',
+            'role'      => 'role',
+            'last_login'=> 'last_login',
+        ],
     ],
 
     'crewgest' => [
@@ -36,6 +44,13 @@ return [
         'email_field'  => 'email',
         'id_field'     => 'id',
         'redirect_ok'  => '/economato/public/index.php',
+        // Variáveis de sessão: 'nome_sessão' => 'coluna_na_bd'
+        'session_vars' => [
+            'user_id'      => 'id',
+            'user_email'   => 'email',
+            'user_role_id' => 'role_id',
+            'user_name'    => 'nome',
+        ],
     ],
 
     'worklog' => [
