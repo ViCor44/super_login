@@ -16,8 +16,8 @@ return [
 
     'sae' => [
         'name'         => 'SAE - Sistema de Apoio à Enfermaria',
-        // Aponta para a rota MVC do SAE que já tem SSO nativo completo
-        'login_url'    => 'http://191.188.126.13/enfermaria/public/index.php?route=sso_login',
+        // Aponta para o ficheiro standalone SSO (rota MVC não registada)
+        'login_url'    => 'http://191.188.126.13/enfermaria/sso_login.php',
         'dsn'          => 'mysql:host=localhost;dbname=enfermaria;charset=utf8mb4',
         'db_user'      => 'root',
         'db_pass'      => '',
