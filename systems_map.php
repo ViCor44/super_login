@@ -118,4 +118,20 @@ return [
             'utilizador_funcao' => 'funcao',
         ],
     ],
+
+    'escorregas' => [
+        'name'         => 'Estatísticas dos Escorregas',
+        'login_url'    => 'http://191.188.126.13/estatisticas_escorregas_php_mysql/sso_login.php',
+        'dsn'          => 'mysql:host=localhost;dbname=estatisticas_escorregas;charset=utf8mb4',
+        'db_user'      => 'root',
+        'db_pass'      => '',
+        'users_table'  => 'users',
+        'email_field'  => 'email',
+        'id_field'     => 'id',
+        'redirect_ok'  => '/estatisticas_escorregas_php_mysql/index.php',
+        'session_vars' => [
+            'user_id' => 'id',
+            'user_name' => 'display_name',
+        ],
+    ],
 ];
