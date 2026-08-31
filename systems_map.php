@@ -134,4 +134,16 @@ return [
             'user_name' => 'display_name',
         ],
     ],
+
+    'inventario_ti' => [
+        'name'         => 'Inventário TI',
+        'login_url'    => 'http://191.188.126.13:8000/sso/login',
+        'dsn'          => 'mysql:host=localhost;dbname=inventario_ti;charset=utf8mb4',
+        'db_user'      => 'root',
+        'db_pass'      => '',
+        'users_table'  => 'users',
+        'email_field'  => 'email',
+        'id_field'     => 'id',
+        'redirect_ok'  => 'http://191.188.126.13:8000/equipamentos',
+    ],
 ];
